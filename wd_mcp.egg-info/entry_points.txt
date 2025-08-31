@@ -1,0 +1,2 @@
+[console_scripts]
+wd-mcp = main:main

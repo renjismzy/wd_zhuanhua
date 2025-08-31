@@ -1,0 +1,14 @@
+README.md
+client_example.py
+config.py
+document_converter.py
+main.py
+pyproject.toml
+sse_manager.py
+test_api.py
+wd_mcp.egg-info/PKG-INFO
+wd_mcp.egg-info/SOURCES.txt
+wd_mcp.egg-info/dependency_links.txt
+wd_mcp.egg-info/entry_points.txt
+wd_mcp.egg-info/requires.txt
+wd_mcp.egg-info/top_level.txt
