@@ -109,8 +109,7 @@ async def handle_list_supported_formats() -> CallToolResult:
     """列出支持的格式"""
     formats = await document_converter.get_supported_formats()
     return CallToolResult(
-        content=[TextContent(type="text", text=json.dumps(formats, indent=2))],
-        isError=False
+        content=[TextContent(type="text", text=json.dumps(formats, indent=2))]
     )
 
 
@@ -141,8 +140,7 @@ async def handle_convert_document(arguments: Dict[str, Any]) -> CallToolResult:
     }
     
     return CallToolResult(
-        content=[TextContent(type="text", text=json.dumps(result, indent=2))],
-        isError=False
+        content=[TextContent(type="text", text=json.dumps(result, indent=2))]
     )
 
 
@@ -158,8 +156,7 @@ async def handle_get_conversion_status(arguments: Dict[str, Any]) -> CallToolRes
     
     status = await document_converter.get_job_status(job_id)
     return CallToolResult(
-        content=[TextContent(type="text", text=json.dumps(status, indent=2))],
-        isError=False
+        content=[TextContent(type="text", text=json.dumps(status, indent=2))]
     )
 
 
