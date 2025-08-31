@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Pure MCP Server for Document Conversion
+Fixed MCP Server for Document Conversion
 
-A clean Model Context Protocol (MCP) server implementation without HTTP components.
+A working MCP server implementation that avoids the CallToolResult serialization bug.
 """
 
 import asyncio
@@ -12,9 +12,8 @@ from typing import Any, Dict, List
 
 from mcp.server import Server
 from mcp.types import (
-    CallToolResult,
-    TextContent,
     Tool,
+    TextContent,
 )
 
 from document_converter import DocumentConverter
@@ -83,8 +82,8 @@ async def handle_list_tools() -> List[Tool]:
 
 
 @mcp_server.call_tool()
-async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> CallToolResult:
-    """处理工具调用"""
+async def handle_call_tool(name: str, arguments: Dict[str, Any]):
+    """处理工具调用 - 返回简单的内容而不是CallToolResult对象"""
     try:
         if name == "list_supported_formats":
             return await handle_list_supported_formats()
@@ -93,19 +92,13 @@ async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> CallToolResu
         elif name == "get_conversion_status":
             return await handle_get_conversion_status(arguments)
         else:
-            return CallToolResult(
-                content=[TextContent(type="text", text=f"Unknown tool: {name}")],
-                isError=True
-            )
+            return [TextContent(type="text", text=f"Unknown tool: {name}")]
     except Exception as e:
         logger.error(f"Error in tool call {name}: {str(e)}")
-        return CallToolResult(
-            content=[TextContent(type="text", text=f"Error: {str(e)}")],
-            isError=True
-        )
+        return [TextContent(type="text", text=f"Error: {str(e)}")]
 
 
-async def handle_list_supported_formats() -> CallToolResult:
+async def handle_list_supported_formats():
     """列出支持的格式"""
     try:
         formats = document_converter.get_supported_formats()
@@ -113,18 +106,13 @@ async def handle_list_supported_formats() -> CallToolResult:
             "supported_formats": formats,
             "format_details": document_converter.supported_formats
         }
-        return CallToolResult(
-            content=[TextContent(type="text", text=json.dumps(formats_info, indent=2))]
-        )
+        return [TextContent(type="text", text=json.dumps(formats_info, indent=2))]
     except Exception as e:
         logger.error(f"Error listing supported formats: {str(e)}")
-        return CallToolResult(
-            content=[TextContent(type="text", text=f"Error listing formats: {str(e)}")],
-            isError=True
-        )
+        return [TextContent(type="text", text=f"Error listing formats: {str(e)}")]
 
 
-async def handle_convert_document(arguments: Dict[str, Any]) -> CallToolResult:
+async def handle_convert_document(arguments: Dict[str, Any]):
     """转换文档"""
     try:
         input_path = arguments.get("input_path")
@@ -132,10 +120,7 @@ async def handle_convert_document(arguments: Dict[str, Any]) -> CallToolResult:
         target_format = arguments.get("target_format")
         
         if not all([input_path, output_path, target_format]):
-            return CallToolResult(
-                content=[TextContent(type="text", text="Missing required arguments: input_path, output_path, target_format")],
-                isError=True
-            )
+            return [TextContent(type="text", text="Missing required arguments: input_path, output_path, target_format")]
         
         job_id = await document_converter.convert_document(
             input_path=input_path,
@@ -151,38 +136,25 @@ async def handle_convert_document(arguments: Dict[str, Any]) -> CallToolResult:
             "target_format": target_format
         }
         
-        return CallToolResult(
-            content=[TextContent(type="text", text=json.dumps(result, indent=2))]
-        )
+        return [TextContent(type="text", text=json.dumps(result, indent=2))]
     except Exception as e:
         logger.error(f"Error converting document: {str(e)}")
-        return CallToolResult(
-            content=[TextContent(type="text", text=f"Error converting document: {str(e)}")],
-            isError=True
-        )
+        return [TextContent(type="text", text=f"Error converting document: {str(e)}")]
 
 
-async def handle_get_conversion_status(arguments: Dict[str, Any]) -> CallToolResult:
+async def handle_get_conversion_status(arguments: Dict[str, Any]):
     """获取转换状态"""
     try:
         job_id = arguments.get("job_id")
         
         if not job_id:
-            return CallToolResult(
-                content=[TextContent(type="text", text="Missing required argument: job_id")],
-                isError=True
-            )
+            return [TextContent(type="text", text="Missing required argument: job_id")]
         
         status = await document_converter.get_job_status(job_id)
-        return CallToolResult(
-            content=[TextContent(type="text", text=json.dumps(status, indent=2))]
-        )
+        return [TextContent(type="text", text=json.dumps(status, indent=2))]
     except Exception as e:
         logger.error(f"Error getting conversion status: {str(e)}")
-        return CallToolResult(
-            content=[TextContent(type="text", text=f"Error getting status: {str(e)}")],
-            isError=True
-        )
+        return [TextContent(type="text", text=f"Error getting status: {str(e)}")]
 
 
 async def run_mcp_server():
